@@ -2,9 +2,8 @@
 
 md_connect <- function(config_env = 'default') {
     
-    config <- config::get(config = config_env)
-    #token <- Sys.getenv("MD_TOKEN")
-    token <- config$md_token
+    #config <- config::get(config = config_env)
+    token <- Sys.getenv("MD_TOKEN")
     
     conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
     
@@ -13,7 +12,7 @@ md_connect <- function(config_env = 'default') {
     DBI::dbExecute(conn, "LOAD motherduck")
     
     auth_query <- paste0("SET motherduck_token='", token, "';")
-    dbExecute(conn, auth_query)
+    DBI::dbExecute(conn, auth_query)
     
     # Attach to MotherDuck 
     DBI::dbExecute(conn, "ATTACH 'md:'")

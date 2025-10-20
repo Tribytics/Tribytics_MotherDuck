@@ -7,31 +7,22 @@
 #    https://shiny.posit.co/
 #
 
-# from global.R 
 
-    library(shiny)
-    library(duckdb)
-    library(DBI)
-    library(dplyr)
-    library(dbplyr)
-    library(glue)
-    library(spatial)
+library(dplyr)
+library(dbplyr)
+library(duckdb)
+library(shiny)
+library(spatial)
 
-
-#source(here::here("R/functions.R"))
-source("md_connect.R")
 
 conn <- md_connect() 
-
-#rs <- dbExecute(conn, "ATTACH 'md:'")
 
 enc_sample <- tbl(conn, I("my_db.ccdm.encounters_sample"))
 
 ages <- enc_sample |> 
-    pull(anchor_age)
+   pull(anchor_age)
 
 dbDisconnect(conn)
-
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
