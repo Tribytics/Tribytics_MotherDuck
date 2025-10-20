@@ -1,0 +1,7 @@
+
+default:
+  md_token: !expr Sys.getenv("MD_TOKEN")
+
+admin:
+  md_token: !expr Sys.getenv("MD_ADMIN_TOKEN")
+  
