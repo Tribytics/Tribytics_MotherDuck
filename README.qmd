@@ -1,0 +1,249 @@
+---
+title: "README"
+format: gfm
+---
+
+
+#### Demo/Development environment 
+
+- Rapid development & deployment for demo projects
+- Small/public datasets only
+- Free (with limitations on compute/storage)
+- Local development with Positron/RStudio
+- Publish on Posit Connect free tier (?? products)
+- MotherDuck free tier for storage < ?? GB
+
+
+![](figs/Tribytics_free_architecture.png)
+
+
+#### AWS Production/more complex infrastructure
+
+- Easily scale up for formal projects
+- $200/month minimum
+- HIPAA compliant
+- MotherDuck for storage engine
+- Publish on AWS Shiny/Connect instance
+
+![](figs/Tribytics_AWS_architecture.png)
+
+## Connecting to MotherDuck
+
+The `ddb_connect()` function can be used to set up a connection object: 
+
+```{r}
+#| eval: true
+#| echo: true
+#| 
+
+pacman::p_load(
+    duckdb,
+    DBI,
+    dplyr,
+    glue
+)
+
+source("R/functions.R")
+
+conn <- md_connect() 
+
+```
+
+When this runs, you'll be prompted to authenticate with an MFA code in a browser tab. To avoid this, you can generate a token from the settings page in your MotherDuck.com profile or you can run this command: 
+
+
+```{r}
+#| eval: false
+#| echo: true
+dbExecute(conn, "PRAGMA PRINT_MD_TOKEN")
+```
+which will display something like this. 
+
+```
+export motherduck_token='<your token value>'
+[1] 0  
+```
+
+Save the token to `~/.Renviron` as `MD_TOKEN=<your token value>`
+
+## Examples 
+
+### Schemas 
+
+
+```{r}
+#| label: schemata example code
+#| eval: false
+#| echo: true
+
+dbGetQuery(conn, "SELECT catalog_name, schema_name FROM information_schema.schemata;")
+
+```
+
+
+```{r}
+#| label: schemata filtered results
+#| eval: true
+#| echo: false
+
+
+results <- dbGetQuery(conn, "SELECT catalog_name, schema_name FROM information_schema.schemata;")
+
+results |> 
+    filter(
+        catalog_name %in% c(
+        'md_information_schema', 
+        'memory', 
+        'mimic_iv_demo',
+        'system', 
+        'temp'))
+        
+```
+
+
+
+
+### Tables 
+
+
+```{r}
+#| label: table example code
+#| eval: false
+#| echo: true
+
+dbGetQuery(conn, "SELECT database_name, schema_name, table_name from duckdb_tables();")
+
+
+
+```
+
+
+
+```{r}
+#| label: table filtered results
+#| eval: true
+#| echo: false
+
+
+results <- dbGetQuery(conn, "SELECT database_name, schema_name, table_name from duckdb_tables();")
+
+results |> 
+    filter(
+        database_name %in% c(
+        'memory', 
+        'mimic_iv_demo'))
+        
+```
+
+
+
+
+## Explore the mimic_iv_demo tables
+
+
+```{r}
+
+admissions <- tbl(conn, I("mimic_iv_demo.mimiciv_hosp.admissions"))
+patients   <- tbl(conn, I("mimic_iv_demo.mimiciv_hosp.patients"))
+
+admissions |> 
+    select(
+        subject_id:discharge_location,
+        hospital_expire_flag
+       # everything()
+       ) |> 
+    glimpse()
+
+```
+
+```{r}
+patients |> 
+    select(
+        subject_id:anchor_age
+        #everything()
+       ) |> 
+    glimpse()
+
+```
+
+## CoreCDM (minimal example)
+
+MotherDuck is primarily designed for reading data. This means that each database can have only one 'writer' or owner, but they can still be shared for 'reading' by multiple users.
+
+This code shows an example of creating a CoreCDM table for an individual developer and then sharing it to for read-only access by other users to in the group.
+
+```{r}
+#| label: show enc table 
+
+db_name <- "my_db" # this is a default personal database
+
+#rs <- dbExecute(conn, glue("CREATE DATABASE IF NOT EXISTS {db_name}"))
+rs <- dbExecute(conn, glue("USE {db_name}"))
+rs <- dbExecute(conn, glue("CREATE SCHEMA IF NOT EXISTS ccdm"))
+
+encounters <- 
+    admissions |> 
+    inner_join(patients, join_by(subject_id))
+
+enc <- 
+    encounters |> 
+    #head() |>
+    compute(name = I(glue("{db_name}.ccdm.encounters_sample")), 
+            temporary = FALSE, 
+            overwrite = TRUE)
+
+enc |> 
+    head() |>
+    collect() |> 
+    knitr::kable()
+
+```
+
+
+
+
+## Sharing a Database
+
+This command will generate a `share_url` that can be sent to other users to access using 'ATTACH'. In our case, the default sharing mode will make this available to group members automatically. 
+
+```{r}
+#| eval: false
+#| echo: true
+
+# use a different database name than 'my_db' 
+# if you use this.
+
+dbGetQuery(conn, glue("CREATE SHARE {db_name}"))
+
+dbGetQuery(conn, glue("UPDATE SHARE {db_name}"))
+
+```
+
+
+## Deleting a Database
+
+```{r}
+#| eval: false 
+#| echo: true
+
+# As earlier, only use these for databased other 
+# than my_db (your personal database)
+
+rs <- dbExecute(conn, glue("DROP SHARE IF EXISTS {db_name}"))
+rs <- dbExecute(conn, glue("USE md_information_schema")) # must switch to a different database first
+rs <- dbExecute(conn, glue("DROP DATABASE {db_name} CASCADE;")) # deletes all schemas & tables
+
+```
+
+```{r}
+dbDisconnect(conn, shutdown = TRUE)
+
+```
+
+
+## SQL Editor 
+
+
+![](figs/Tribytics_MD_DBeaver.png)
+
+
