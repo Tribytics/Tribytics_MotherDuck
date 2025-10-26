@@ -17,12 +17,18 @@ library(spatial)
 
 conn <- md_connect() 
 
-enc_sample <- tbl(conn, I("my_db.ccdm.encounters_sample"))
+ages <- NULL 
 
-ages <- enc_sample |> 
-   pull(anchor_age)
+if(DBI::dbIsValid(conn)) {
+    enc_sample <- tbl(conn, I("my_db.ccdm.encounters_sample"))
+    
+    ages <- enc_sample |> 
+        pull(anchor_age)
 
-dbDisconnect(conn)
+    dbDisconnect(conn)
+} 
+
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -33,6 +39,7 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
+            "The {ages} data is pulled from the `ccdm.encounters_sample` table in MotherDuck.",
             sliderInput("bins",
                         "Number of bins:",
                         min = 1,
@@ -51,6 +58,12 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     output$distPlot <- renderPlot({
+        validate(
+             need(ages, 
+                "Error: unable to ATTACH to MotherDuck. Confirm the token is valid")
+        )
+
+
         # generate bins based on input$bins from ui.R
         x <- ages # from global.R
         bins <- seq(min(x), max(x), length.out = input$bins + 1)

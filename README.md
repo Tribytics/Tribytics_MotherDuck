@@ -1,6 +1,11 @@
 # README
 
 
+[DuckDB/MotherDuck
+Demo](https://019a2198-4d53-4e7e-8b8f-e42f4a8842a0.share.connect.posit.cloud/)
+
+A minimal Shiny app on Posit Connect using MotherDuck as the datasource
+
 #### Demo/Development environment
 
 - Rapid development & deployment for demo projects
