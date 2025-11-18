@@ -120,7 +120,7 @@ dbGetQuery(conn, "SELECT database_name, schema_name, table_name from duckdb_tabl
 ## Explore the mimic_iv_demo tables
 
 If the results above do not include mimic_iv_demo tables, that indicates
-that the `mimic_iv_demo` database may need to be attached to your use
+that the `mimic_iv_demo` database needs to be attached to your user
 account using this snippet:
 
 ``` r
@@ -247,5 +247,9 @@ dbDisconnect(conn, shutdown = TRUE)
 ```
 
 ## SQL Editor
+
+The SQL IDE integration page for
+[DBeaver](https://motherduck.com/docs/integrations/sql-ides/dbeaver/)
+shows the steps for setting up a connection.
 
 ![](figs/Tribytics_MD_DBeaver.png)
