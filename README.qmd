@@ -262,6 +262,9 @@ dbDisconnect(conn, shutdown = TRUE)
 
 ## SQL Editor 
 
+The SQL IDE integration page for [DBeaver](https://motherduck.com/docs/integrations/sql-ides/dbeaver/) shows the steps for setting up a connection.
+
+
 
 ![](figs/Tribytics_MD_DBeaver.png)
 

@@ -119,6 +119,17 @@ dbGetQuery(conn, "SELECT database_name, schema_name, table_name from duckdb_tabl
 
 ## Explore the mimic_iv_demo tables
 
+If the results above do not include mimic_iv_demo tables, that indicates
+that the `mimic_iv_demo` database may need to be attached to your use
+account using this snippet:
+
+``` r
+-- Run this snippet to attach database
+-- This will only work for Tribytics Organization members
+
+rs <- dbExecute(conn, "ATTACH 'md:_share/mimic_iv_demo/4c53f426-2e3f-438f-ac95-9b44a1fadd16';"
+```
+
 ``` r
 admissions <- tbl(conn, I("mimic_iv_demo.mimiciv_hosp.admissions"))
 patients   <- tbl(conn, I("mimic_iv_demo.mimiciv_hosp.patients"))
