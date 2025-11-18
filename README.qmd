@@ -144,6 +144,21 @@ results |>
 
 ## Explore the mimic_iv_demo tables
 
+If the results above do not include mimic_iv_demo tables, that indicates  that the `mimic_iv_demo` database needs to be attached to your user account using this snippet: 
+
+```{r}
+#| echo: true
+#| eval: false 
+
+
+-- Run this snippet to attach database
+-- This will only work for Tribytics Organization members
+
+rs <- dbExecute(conn, "ATTACH 'md:_share/mimic_iv_demo/4c53f426-2e3f-438f-ac95-9b44a1fadd16';"
+
+
+```
+
 
 ```{r}
 
